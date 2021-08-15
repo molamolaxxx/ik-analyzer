@@ -3,18 +3,15 @@
  */
 package org.wltea.analyzer.cfg;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
-import java.util.Properties;
-
 import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.seg.CJKSegmenter;
 import org.wltea.analyzer.seg.ISegmenter;
 import org.wltea.analyzer.seg.LetterSegmenter;
 import org.wltea.analyzer.seg.QuantifierSegmenter;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * IK Analyzer v3.2
@@ -35,7 +32,12 @@ public class Configuration {
 	private static final Configuration CFG = new Configuration();
 	
 	private Properties props;
-	
+
+	/**
+	 * 词元类型黑名单，包括其中的不输出
+	 */
+	private static Set<Integer> lexemeTypeBlackList = new HashSet<>();
+
 	/*
 	 * 初始化配置文件
 	 */
@@ -54,7 +56,17 @@ public class Configuration {
 			}
 		}
 	}
-	
+
+	public static void addLexemeBlackList(List<Integer> blackList) {
+		for (Integer type : blackList) {
+			lexemeTypeBlackList.add(type);
+		}
+	}
+
+	public static Set<Integer> getLexemeBlackList() {
+		return lexemeTypeBlackList;
+	}
+
 	/**
 	 * 获取扩展字典配置路径
 	 * @return List<String> 相对类加载器的路径

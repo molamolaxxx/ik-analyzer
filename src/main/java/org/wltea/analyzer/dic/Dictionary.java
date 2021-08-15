@@ -3,14 +3,14 @@
  */
 package org.wltea.analyzer.dic;
 
+import org.wltea.analyzer.cfg.Configuration;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.List;
-
-import org.wltea.analyzer.cfg.Configuration;
 
 /**
  * IK Analyzer v3.2
@@ -33,56 +33,72 @@ public class Dictionary {
 	/*
 	 * 词典单子实例
 	 */
-	private static final Dictionary singleton;
-	
-	/*
-	 * 词典初始化
-	 */
-	static{
-		singleton = new Dictionary();
-	}
+	private static Dictionary singleton;
 	
 	/*
 	 * 主词典对象
 	 */
-	private DictSegment _MainDict;
+	private DictSegment _MainDict = new DictSegment((char)0);
 	/*
 	 * 姓氏词典
 	 */
-	private DictSegment _SurnameDict;
+	private DictSegment _SurnameDict = new DictSegment((char)0);
 	/*
 	 * 量词词典
 	 */
-	private DictSegment _QuantifierDict;
+	private DictSegment _QuantifierDict = new DictSegment((char)0);
 	/*
 	 * 后缀词典
 	 */
-	private DictSegment _SuffixDict;
+	private DictSegment _SuffixDict = new DictSegment((char)0);
 	/*
 	 * 副词，介词词典
 	 */
-	private DictSegment _PrepDict;
+	private DictSegment _PrepDict = new DictSegment((char)0);
 	/*
 	 * 停止词集合
 	 */
-	private DictSegment _StopWords;
+	private DictSegment _StopWords = new DictSegment((char)0);
 	
 	private Dictionary(){
 		//初始化系统词典
-		loadMainDict();
-		loadSurnameDict();
-		loadQuantifierDict();
-		loadSuffixDict();
-		loadPrepDict();
-		loadStopWordDict();
+		initDictionary();
+	}
+
+	public static class Options {
+		public static boolean loadMainDict = true;
+		public static boolean loadSurnameDict = false;
+		public static boolean loadQuantifierDict = false;
+		public static boolean loadSuffixDict = false;
+		public static boolean loadPrepDict = false;
+		public static boolean loadStopWordDict = true;
+	}
+
+	public void initDictionary() {
+		if (Options.loadMainDict) {
+			loadMainDict();
+		}
+		if (Options.loadSurnameDict) {
+			loadSurnameDict();
+		}
+		if (Options.loadQuantifierDict) {
+			loadQuantifierDict();
+		}
+		if (Options.loadSuffixDict) {
+			loadSuffixDict();
+		}
+		if (Options.loadPrepDict) {
+			loadPrepDict();
+		}
+		if (Options.loadStopWordDict) {
+			loadStopWordDict();
+		}
 	}
 
 	/**
 	 * 加载主词典及扩展词典
 	 */
 	private void loadMainDict(){
-		//建立一个主词典实例
-		_MainDict = new DictSegment((char)0);
 		//读取主词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_MAIN);
         if(is == null){
@@ -158,8 +174,6 @@ public class Dictionary {
 	 * 加载姓氏词典
 	 */
 	private void loadSurnameDict(){
-		//建立一个姓氏词典实例
-		_SurnameDict = new DictSegment((char)0);
 		//读取姓氏词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_SURNAME);
         if(is == null){
@@ -195,8 +209,6 @@ public class Dictionary {
 	 * 加载量词词典
 	 */
 	private void loadQuantifierDict(){
-		//建立一个量词典实例
-		_QuantifierDict = new DictSegment((char)0);
 		//读取量词词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_QUANTIFIER);
         if(is == null){
@@ -232,8 +244,6 @@ public class Dictionary {
 	 * 加载后缀词典
 	 */
 	private void loadSuffixDict(){
-		//建立一个后缀词典实例
-		_SuffixDict = new DictSegment((char)0);
 		//读取量词词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_SUFFIX);
         if(is == null){
@@ -269,8 +279,6 @@ public class Dictionary {
 	 * 加载介词\副词词典
 	 */
 	private void loadPrepDict(){
-		//建立一个介词\副词词典实例
-		_PrepDict = new DictSegment((char)0);
 		//读取量词词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_PREP);
         if(is == null){
@@ -307,8 +315,6 @@ public class Dictionary {
 	 * 加载停止词词典
 	 */
 	private void loadStopWordDict(){
-		//建立一个停止词典实例
-		_StopWords = new DictSegment((char)0);
 		//读取量词词典文件
         InputStream is = Dictionary.class.getResourceAsStream(Dictionary.PATH_DIC_STOP);
         if(is == null){
@@ -390,7 +396,15 @@ public class Dictionary {
 	 * @return Dictionary
 	 */
 	public static Dictionary getInstance(){
-		return Dictionary.singleton;
+		if (null == singleton) {
+			synchronized (Dictionary.class) {
+				if (null == singleton) {
+					singleton = new Dictionary();
+					singleton.initDictionary();
+				}
+			}
+		}
+		return singleton;
 	}
 	
 	/**

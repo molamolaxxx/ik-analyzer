@@ -3,13 +3,15 @@
  */
 package org.wltea.analyzer;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
-
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.help.CharacterHelper;
 import org.wltea.analyzer.seg.ISegmenter;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * IK Analyzer v3.2
@@ -172,6 +174,31 @@ public final class IKSegmentation{
 		for(ISegmenter segmenter : segmenters){
 			segmenter.reset();
 		}
+	}
+
+	/**
+	 * 执行分词逻辑
+	 * @param input
+	 * @return
+	 */
+	public List<String> process(String input) {
+		List<String> result = new ArrayList<>();
+		StringReader reader = new StringReader(input);
+		this.reset(reader);
+		try {
+			Lexeme word = null;
+			Lexeme lexeme = this.next();
+			for (; lexeme != null; lexeme = this.next()) {
+				// 黑名单判断
+				if (Configuration.getLexemeBlackList().contains(lexeme.getLexemeType())) {
+					continue;
+				}
+				result.add(lexeme.getLexemeText());
+			}
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+		return result;
 	}
 
 }
